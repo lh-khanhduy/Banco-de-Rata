@@ -35,12 +35,12 @@ func (s *Server) createAccount(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, account)
 }
 
-type getAccountRequest struct {
+type idRequest struct {
 	ID int64 `uri:"id" binding:"required,min=1"`
 }
 
 func (s *Server) getAccount(ctx *gin.Context) {
-	var req getAccountRequest
+	var req idRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -85,4 +85,48 @@ func (s *Server) listAccounts(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, listAccounts)
 
+}
+
+type updateAccountRequest struct {
+	ID      int64 `json:"id" binding:"required"`
+	Balance int64 `json:"balance" binding:"required,min=0"`
+}
+
+func (s *Server) updateAccount(ctx *gin.Context) {
+	var req updateAccountRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	args := db.UpdateAccountParams{
+		ID:      req.ID,
+		Balance: req.Balance,
+	}
+
+	updatedAcc, err := s.store.UpdateAccount(ctx, args)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, updatedAcc)
+}
+
+func (s *Server) deleteAccount(ctx *gin.Context) {
+	var req idRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// TODO: handle delete entries as well
+
+	if err := s.store.DeleteAccount(ctx, req.ID); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, "account deleted")
 }
