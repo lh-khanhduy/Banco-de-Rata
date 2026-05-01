@@ -120,9 +120,7 @@ func (s *Server) deleteAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
-	// TODO: handle delete entries as well
-
+	// This one call will automatically wipe entries and transfers in the DB due to references declared in migration.up
 	if err := s.store.DeleteAccount(ctx, req.ID); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
