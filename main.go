@@ -6,17 +6,17 @@ import (
 
 	"github.com/lh-khanhduy/banco_de_rata/api"
 	db "github.com/lh-khanhduy/banco_de_rata/db/sqlc"
+	"github.com/lh-khanhduy/banco_de_rata/utils"
 	_ "github.com/lib/pq"
 )
 
-const (
-	dbDriver = "postgres"
-	dbSource = "postgresql://root:khanhduy@localhost:5432/banco_de_rata?sslmode=disable"
-	address  = "0.0.0.0:8080"
-)
-
 func main() {
-	conn, err := sql.Open(dbDriver, dbSource)
+	config, err := utils.LoadConfig(".")
+	if err != nil {
+		log.Fatal("cannot load configuration: ", err)
+	}
+
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to database: ", err)
 	}
@@ -24,7 +24,7 @@ func main() {
 	store := db.NewStore(conn)
 	server := api.NewServer(store)
 
-	err = server.Start(address)
+	err = server.Start(config.ServerAddress)
 	if err != nil {
 		log.Fatal("cannot star server: ", err)
 	}
