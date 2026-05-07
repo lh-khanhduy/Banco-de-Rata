@@ -14,13 +14,13 @@ import (
 // Server serves HTTP request for banking services
 type Server struct {
 	config     utils.Config
-	store      *db.Store
+	store      db.Store
 	tokenMaker token.Maker
 	router     *gin.Engine
 }
 
 // NewServer creates a HTTP server and setup routing
-func NewServer(config utils.Config, store *db.Store) (*Server, error) {
+func NewServer(config utils.Config, store db.Store) (*Server, error) {
 	// use Paseto for generating token
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
