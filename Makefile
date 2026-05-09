@@ -2,6 +2,7 @@ DB_URL=postgresql://root:khanhduy@localhost:5432/banco_de_rata?sslmode=disable
 	
 postgres:
 	docker run --name postgres18 \
+		--network bank-network \
 		-p 5432:5432 \
 		-e POSTGRES_USER=root \
 		-e POSTGRES_PASSWORD=khanhduy \
