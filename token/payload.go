@@ -14,9 +14,8 @@ var (
 )
 
 type Payload struct {
-	// ID       uuid.UUID `json:"id"`
-	Username string `json:"username"`
-
+	ID        uuid.UUID `json:"id"`
+	Username  string    `json:"username"`
 	IssuedAt  time.Time `json:"issued_at"`  // for Paseto
 	ExpiredAt time.Time `json:"expired_at"` // for Paseto
 
@@ -31,6 +30,7 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 	}
 
 	return &Payload{
+		ID:        tokenID,
 		Username:  username,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
