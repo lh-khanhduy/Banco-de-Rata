@@ -78,22 +78,14 @@ func (s *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.L
 		return nil, status.Error(codes.Internal, "cannot created refresh token")
 	}
 
-	// if md, ok := metadata.FromIncomingContext(ctx); ok {
-	// 	if ua := md.Get("user-agent"); len(ua) > 0 {
-	// 		userAgent = ua[0]
-	// 	}
-
-	// 	if forwardedFor := md.Get("x-forwarded-for"); len(forwardedFor) > 0 {
-	// 		clientIP = strings.TrimSpace(strings.Split(forwardedFor[0], ",")[0])
-	// 	}
-	// }
+	md := s.extractMetadata(ctx)
 
 	session, err := s.store.CreateSession(ctx, db.CreateSessionParams{
 		ID:           refreshPayload.ID,
 		Username:     user.Username,
 		RefreshToken: refreshToken,
-		UserAgent:    "",
-		ClientIp:     "",
+		UserAgent:    md.UserAgent,
+		ClientIp:     md.ClientIP,
 		IsBlocked:    false,
 		ExpiresAt:    refreshPayload.ExpiredAt,
 	})

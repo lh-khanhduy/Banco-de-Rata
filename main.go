@@ -33,7 +33,7 @@ func main() {
 	store := db.NewStore(conn)
 
 	// uncomment to run HTTP Gateway server at the same time with gRPC server
-	// go runGatewayServer(config, store)
+	go runGatewayServer(config, store)
 	runGRPCServer(config, store)
 }
 
