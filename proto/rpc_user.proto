@@ -3,7 +3,7 @@ syntax = "proto3";
 package pb;
 
 import "google/protobuf/timestamp.proto";
-import "user.proto";
+import "common.proto";
 
 option go_package = "github.com/lh-khanhduy/banco_de_rata/pb";
 

@@ -1,0 +1,6 @@
+This folder is specific for gRPC services, for HTTP Gin services will be in /api
+
+# _Evans CLI note:_
+
+- Run "package pb" then run "show service" could fix the problem of the service table being empty.
+- Run "service UserServices" then run "call CreateUser" could fix the 'CreateUser: unknown service name' error.
