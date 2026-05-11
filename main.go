@@ -59,6 +59,7 @@ func runGRPCServer(config utils.Config, store db.Store) {
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterUserServicesServer(grpcServer, server)
+	pb.RegisterAccountServicesServer(grpcServer, server)
 	reflection.Register(grpcServer)
 
 	listener, err := net.Listen("tcp", config.GRPCServerAddress)

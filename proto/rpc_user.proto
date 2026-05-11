@@ -21,6 +21,12 @@ service UserServices {
       body: "*"
     };
   }
+  rpc RenewToken(RenewTokenRequest) returns (RenewTokenResponse) {
+    option (google.api.http) = {
+      post: "/v1/renew_token"
+      body: "*"
+    };
+  }
 }
 
 message CreateUserRequest {
@@ -46,4 +52,13 @@ message LoginUserResponse {
   string                    refresh_token            = 4;
   google.protobuf.Timestamp refresh_token_expired_at = 5;
   User                      user                     = 6;
+}
+
+message RenewTokenRequest {
+  string refresh_token = 1;
+}
+
+message RenewTokenResponse {
+  string                    access_token            = 1;
+  google.protobuf.Timestamp access_token_expired_at = 2;
 }

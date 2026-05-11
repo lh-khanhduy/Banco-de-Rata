@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
@@ -11,11 +12,17 @@ const (
 	grpcGatewayUserAgentHeader = "grpcgateway-user-agent"
 	userAgentHeader            = "user-agent"
 	xForwardedForHeader        = "x-forwarded-for"
+	authorizationPayloadKey    = "authorization_payload"
 )
 
 type Metadata struct {
+	Username  string
 	UserAgent string
 	ClientIP  string
+}
+
+type AuthPayload struct {
+	Username string `json:"username"`
 }
 
 func (s *Server) extractMetadata(ctx context.Context) *Metadata {
@@ -35,6 +42,18 @@ func (s *Server) extractMetadata(ctx context.Context) *Metadata {
 		if userAgents := md.Get(userAgentHeader); len(userAgents) > 0 {
 			result.UserAgent = userAgents[0]
 		}
+
+		// --- NEW: AUTH PAYLOAD EXTRACTION ---
+		if payloads := md.Get(authorizationPayloadKey); len(payloads) > 0 {
+			var authPayload AuthPayload
+			if err := json.Unmarshal([]byte(payloads[0]), &authPayload); err == nil {
+				result.Username = authPayload.Username
+			} else {
+				// Optional: Log the error if you want visibility into bad payloads
+				// log.Printf("failed to unmarshal authorization_payload: %v", err)
+			}
+		}
+		// ------------------------------------
 	}
 
 	if p, ok := peer.FromContext(ctx); ok {

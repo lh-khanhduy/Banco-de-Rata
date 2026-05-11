@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/api/annotations.proto";
+import "common.proto";
+
+option go_package = "github.com/lh-khanhduy/banco_de_rata/pb";
+
+service AccountServices {
+  rpc CreateAccount(CreateAccountRequest) returns (IdResponse){
+    option (google.api.http) = {
+      post: "/v1/create_account"
+      body: "*"
+    };
+  }
+}
+
+message CreateAccountRequest {
+  string currency = 1;
+}

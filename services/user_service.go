@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	db "github.com/lh-khanhduy/banco_de_rata/db/sqlc"
 	"github.com/lh-khanhduy/banco_de_rata/pb"
@@ -106,6 +107,50 @@ func (s *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.L
 			PasswordChangedAt: timestamppb.New(user.PasswordChangedAt),
 			CreatedAt:         timestamppb.New(user.CreatedAt),
 		},
+	}
+
+	return res, nil
+}
+
+func (s *Server) RenewToken(ctx context.Context, req *pb.RenewTokenRequest) (*pb.RenewTokenResponse, error) {
+	refreshPayload, err := s.tokenMaker.VerifyToken(req.GetRefreshToken())
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "invalid access token")
+	}
+
+	session, err := s.store.GetSession(ctx, refreshPayload.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, status.Error(codes.NotFound, "session not found")
+		}
+		return nil, status.Error(codes.Internal, "failed to find session")
+	}
+
+	if session.IsBlocked {
+		return nil, status.Error(codes.Unauthenticated, "session is blocked")
+	}
+
+	if session.Username != refreshPayload.Username {
+		return nil, status.Error(codes.Unauthenticated, "incorrect session user")
+	}
+
+	if session.RefreshToken != req.RefreshToken {
+		return nil, status.Error(codes.Unauthenticated, "mismatched token session")
+	}
+
+	if time.Now().After(session.ExpiresAt) {
+		return nil, status.Error(codes.Unauthenticated, "session expired")
+	}
+
+	// NEW ACCESS TOKEN
+	accessToken, accessPayload, err := s.tokenMaker.CreateToken(refreshPayload.Username, s.config.AccessTokenDuration)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "cannot created new access token")
+	}
+
+	res := &pb.RenewTokenResponse{
+		AccessToken:          accessToken,
+		AccessTokenExpiredAt: timestamppb.New(accessPayload.ExpiredAt),
 	}
 
 	return res, nil
