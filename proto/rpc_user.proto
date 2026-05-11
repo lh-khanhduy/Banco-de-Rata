@@ -15,12 +15,14 @@ service UserServices {
       body: "*"
     };
   }
+
   rpc LoginUser(LoginUserRequest) returns (LoginUserResponse) {
     option (google.api.http) = {
       post: "/v1/login_user"
       body: "*"
     };
   }
+
   rpc RenewToken(RenewTokenRequest) returns (RenewTokenResponse) {
     option (google.api.http) = {
       post: "/v1/renew_token"

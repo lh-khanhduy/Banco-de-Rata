@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"log"
 
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
@@ -43,17 +44,16 @@ func (s *Server) extractMetadata(ctx context.Context) *Metadata {
 			result.UserAgent = userAgents[0]
 		}
 
-		// --- NEW: AUTH PAYLOAD EXTRACTION ---
+		// AuthPayload extraction
 		if payloads := md.Get(authorizationPayloadKey); len(payloads) > 0 {
 			var authPayload AuthPayload
 			if err := json.Unmarshal([]byte(payloads[0]), &authPayload); err == nil {
 				result.Username = authPayload.Username
 			} else {
 				// Optional: Log the error if you want visibility into bad payloads
-				// log.Printf("failed to unmarshal authorization_payload: %v", err)
+				log.Printf("failed to unmarshal authorization_payload: %v", err)
 			}
 		}
-		// ------------------------------------
 	}
 
 	if p, ok := peer.FromContext(ctx); ok {

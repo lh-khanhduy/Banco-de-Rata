@@ -14,8 +14,39 @@ service AccountServices {
       body: "*"
     };
   }
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse){
+    option (google.api.http) = {
+      post: "/v1/get_account"
+      body: "*"
+    };
+  }
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountResponse){
+    option (google.api.http) = {
+      post: "/v1/list_accounts"
+      body: "*"
+    };
+  }
+  // rpc UpdateAccount
+  // rpc DeleteAccount
 }
 
 message CreateAccountRequest {
   string currency = 1;
+}
+
+message GetAccountRequest {
+  int64 id = 1;
+}
+
+message GetAccountResponse {
+  Account account = 1;
+}
+
+message ListAccountsRequest {
+  int32 page_id   = 1;
+  int32 page_size = 2;
+}
+
+message ListAccountResponse {
+  repeated Account accounts = 1;
 }

@@ -5,6 +5,8 @@ This folder is specific for gRPC services, for HTTP Gin services will be in /api
 - Run "package pb" then run "show service" could fix the problem of the service table being empty.
 - Run "service UserServices" then run "call CreateUser" could fix the 'CreateUser: unknown service name' error.
 
+- to set header , run: header authorization_payload='{"username":"kevin"}'
+
 # _make proto issues:_
 
 - If got the error:
