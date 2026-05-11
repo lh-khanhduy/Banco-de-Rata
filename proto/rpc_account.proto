@@ -14,7 +14,7 @@ service AccountServices {
       body: "*"
     };
   }
-  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse){
+  rpc GetAccount(GetAccountRequest) returns (AccountResponse){
     option (google.api.http) = {
       post: "/v1/get_account"
       body: "*"
@@ -26,8 +26,18 @@ service AccountServices {
       body: "*"
     };
   }
-  // rpc UpdateAccount
-  // rpc DeleteAccount
+  rpc UpdateAccount(UpdateAccountRequest) returns (AccountResponse){
+    option (google.api.http) = {
+      post: "/v1/update_account"
+      body: "*"
+    };
+  }
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse){
+    option (google.api.http) = {
+      post: "/v1/delete_account"
+      body: "*"
+    };
+  }
 }
 
 message CreateAccountRequest {
@@ -38,7 +48,7 @@ message GetAccountRequest {
   int64 id = 1;
 }
 
-message GetAccountResponse {
+message AccountResponse {
   Account account = 1;
 }
 
@@ -49,4 +59,17 @@ message ListAccountsRequest {
 
 message ListAccountResponse {
   repeated Account accounts = 1;
+}
+
+message UpdateAccountRequest {
+  int64 id      = 1;
+  int64 balance = 2;
+}
+
+message DeleteAccountRequest {
+  int64 id = 1;
+}
+
+message DeleteAccountResponse {
+  int64 id = 1;
 }

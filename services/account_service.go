@@ -45,7 +45,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest
 	return res, nil
 }
 
-func (s *Server) GetAccount(ctx context.Context, req *pb.GetAccountRequest) (*pb.GetAccountResponse, error) {
+func (s *Server) GetAccount(ctx context.Context, req *pb.GetAccountRequest) (*pb.AccountResponse, error) {
 	account, err := s.store.GetAccount(ctx, req.GetId())
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -64,7 +64,7 @@ func (s *Server) GetAccount(ctx context.Context, req *pb.GetAccountRequest) (*pb
 		return nil, status.Error(codes.Unauthenticated, "account doesn't belong to the authenticated user")
 	}
 
-	res := &pb.GetAccountResponse{
+	res := &pb.AccountResponse{
 		Account: &pb.Account{
 			Id:        account.ID,
 			Owner:     account.Owner,
@@ -113,4 +113,39 @@ func fromDBAccountToPBAccount(list []db.Account) []*pb.Account {
 	}
 
 	return result
+}
+
+func (s *Server) UpdateAccount(ctx context.Context, req *pb.UpdateAccountRequest) (*pb.AccountResponse, error) {
+	args := db.UpdateAccountParams{
+		ID:      req.GetId(),
+		Balance: req.GetBalance(),
+	}
+
+	updatedAcc, err := s.store.UpdateAccount(ctx, args)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "cannot update account")
+	}
+
+	res := &pb.AccountResponse{
+		Account: &pb.Account{
+			Id:        updatedAcc.ID,
+			Owner:     updatedAcc.Owner,
+			Currency:  updatedAcc.Currency,
+			Balance:   updatedAcc.Balance,
+			CreatedAt: timestamppb.New(updatedAcc.CreatedAt),
+		},
+	}
+
+	return res, nil
+}
+func (s *Server) DeleteAccount(ctx context.Context, req *pb.DeleteAccountRequest) (*pb.DeleteAccountResponse, error) {
+	if err := s.store.DeleteAccount(ctx, req.GetId()); err != nil {
+		return nil, status.Error(codes.Internal, "cannot delete account")
+	}
+
+	res := &pb.DeleteAccountResponse{
+		Id: 67,
+	}
+
+	return res, nil
 }
