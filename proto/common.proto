@@ -3,8 +3,21 @@ syntax = "proto3";
 package pb;
 
 import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/lh-khanhduy/banco_de_rata/pb";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title  : "Banco de Rata API";
+    version: "1.0";
+    contact: {
+      name : "Khanh Duy";
+      url  : "https://github.com/lh-khanhduy";
+      email: "mock@gmail.com";
+    };
+  };
+};
 
 message User {
   string                    username            = 1;

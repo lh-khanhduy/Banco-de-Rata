@@ -138,6 +138,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *pb.UpdateAccountRequest
 
 	return res, nil
 }
+
 func (s *Server) DeleteAccount(ctx context.Context, req *pb.DeleteAccountRequest) (*pb.DeleteAccountResponse, error) {
 	if err := s.store.DeleteAccount(ctx, req.GetId()); err != nil {
 		return nil, status.Error(codes.Internal, "cannot delete account")
