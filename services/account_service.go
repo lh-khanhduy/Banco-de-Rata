@@ -14,6 +14,11 @@ import (
 )
 
 func (s *Server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest) (*pb.IdResponse, error) {
+	violations := validateCreateAccountRequest(req)
+	if violations != nil {
+		return nil, invalidArgsError(violations)
+	}
+
 	md := s.extractMetadata(ctx)
 
 	if md.Username == "" {
@@ -116,6 +121,10 @@ func fromDBAccountToPBAccount(list []db.Account) []*pb.Account {
 }
 
 func (s *Server) UpdateAccount(ctx context.Context, req *pb.UpdateAccountRequest) (*pb.AccountResponse, error) {
+	violations := validateUpdateAccountRequest(req)
+	if violations != nil {
+		return nil, invalidArgsError(violations)
+	}
 	args := db.UpdateAccountParams{
 		ID:      req.GetId(),
 		Balance: req.GetBalance(),
