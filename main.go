@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"database/sql"
-	"log"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -17,6 +17,8 @@ import (
 	"github.com/lh-khanhduy/banco_de_rata/services"
 	"github.com/lh-khanhduy/banco_de_rata/utils"
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -25,12 +27,16 @@ import (
 func main() {
 	config, err := utils.LoadConfig(".")
 	if err != nil {
-		log.Fatal("cannot load configuration: ", err)
+		log.Fatal().Err(err).Msg("cannot load configuration")
+	}
+
+	if config.Environment == "dev" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
 	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
-		log.Fatal("cannot connect to database: ", err)
+		log.Fatal().Err(err).Msg("cannot connect to database")
 	}
 
 	runDBMigration(config.MigrationURL, config.DBSource)
@@ -47,26 +53,26 @@ func main() {
 func runDBMigration(migrationURL, dbSource string) {
 	migration, err := migrate.New(migrationURL, dbSource)
 	if err != nil {
-		log.Fatal("cannot create new migrate instance: ", err)
+		log.Fatal().Err(err).Msg("cannot create new migrate instance")
 	}
 
 	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatal("failed to migrate up: ", err)
+		log.Fatal().Err(err).Msg("failed to migrate up")
 	}
 
-	log.Println("db migrated successfully")
+	log.Info().Msg("db migrated successfully")
 }
 
 // runGinServer will run a HTTP server
 func runGinServer(config utils.Config, store db.Store) {
 	server, err := api.NewServer(config, store)
 	if err != nil {
-		log.Fatal("cannot create server: ", err)
+		log.Fatal().Err(err).Msg("cannot create server")
 	}
 
 	err = server.Start(config.HTTPServerAddress)
 	if err != nil {
-		log.Fatal("cannot star server: ", err)
+		log.Fatal().Err(err).Msg("cannot star server")
 	}
 }
 
@@ -74,23 +80,24 @@ func runGinServer(config utils.Config, store db.Store) {
 func runGRPCServer(config utils.Config, store db.Store) {
 	server, err := services.NewServer(config, store)
 	if err != nil {
-		log.Fatal("cannot create server: ", err)
+		log.Fatal().Err(err).Msg("cannot create server")
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcLogger := grpc.UnaryInterceptor(services.GrpcLogger)
+	grpcServer := grpc.NewServer(grpcLogger)
 	pb.RegisterUserServicesServer(grpcServer, server)
 	pb.RegisterAccountServicesServer(grpcServer, server)
 	reflection.Register(grpcServer)
 
 	listener, err := net.Listen("tcp", config.GRPCServerAddress)
 	if err != nil {
-		log.Fatal("cannot create listener: ", err)
+		log.Fatal().Err(err).Msg("cannot create listener")
 	}
 
 	log.Printf("starting gRPC server at %s", listener.Addr().String())
 	err = grpcServer.Serve(listener)
 	if err != nil {
-		log.Fatal("cannot start gRPC server: ", err)
+		log.Fatal().Err(err).Msg("cannot start gRPC server")
 	}
 }
 
@@ -98,7 +105,7 @@ func runGRPCServer(config utils.Config, store db.Store) {
 func runGatewayServer(config utils.Config, store db.Store) {
 	server, err := services.NewServer(config, store)
 	if err != nil {
-		log.Fatal("cannot create server: ", err)
+		log.Fatal().Err(err).Msg("cannot create server")
 	}
 
 	jsonOpt := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
@@ -117,7 +124,7 @@ func runGatewayServer(config utils.Config, store db.Store) {
 
 	err = pb.RegisterUserServicesHandlerServer(ctx, grpcMux, server)
 	if err != nil {
-		log.Fatal("cannot register handler server")
+		log.Fatal().Err(err).Msg("cannot register handler server")
 	}
 
 	mux := http.NewServeMux()
@@ -128,12 +135,12 @@ func runGatewayServer(config utils.Config, store db.Store) {
 
 	listener, err := net.Listen("tcp", config.HTTPServerAddress)
 	if err != nil {
-		log.Fatal("cannot create listener: ", err)
+		log.Fatal().Err(err).Msg("cannot create listener")
 	}
 
 	log.Printf("starting HTTP gateway server at %s", listener.Addr().String())
 	err = http.Serve(listener, mux)
 	if err != nil {
-		log.Fatal("cannot start HTTP gateway server: ", err)
+		log.Fatal().Err(err).Msg("cannot start HTTP gateway server")
 	}
 }
