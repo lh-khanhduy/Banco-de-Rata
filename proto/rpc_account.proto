@@ -16,26 +16,23 @@ service AccountServices {
   }
   rpc GetAccount(GetAccountRequest) returns (AccountResponse){
     option (google.api.http) = {
-      post: "/v1/get_account"
-      body: "*"
+      get: "/v1/get_account"
     };
   }
   rpc ListAccounts(ListAccountsRequest) returns (ListAccountResponse){
     option (google.api.http) = {
-      post: "/v1/list_accounts"
-      body: "*"
+      get: "/v1/list_accounts"
     };
   }
   rpc UpdateAccount(UpdateAccountRequest) returns (AccountResponse){
     option (google.api.http) = {
-      post: "/v1/update_account"
-      body: "*"
+      patch: "/v1/update_account"
+      body : "*"
     };
   }
   rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse){
     option (google.api.http) = {
-      post: "/v1/delete_account"
-      body: "*"
+      delete: "/v1/delete_account"
     };
   }
 }

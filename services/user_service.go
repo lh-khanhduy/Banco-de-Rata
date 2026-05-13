@@ -166,3 +166,60 @@ func (s *Server) RenewToken(ctx context.Context, req *pb.RenewTokenRequest) (*pb
 
 	return res, nil
 }
+
+func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+	violations := validateUpdateUserRequest(req)
+	if violations != nil {
+		return nil, invalidArgsError(violations)
+	}
+
+	args := db.UpdateUserParams{
+		Username: req.GetUsername(),
+		FullName: sql.NullString{
+			String: req.GetFullName(),
+			Valid:  req.FullName != nil,
+		},
+		Email: sql.NullString{
+			String: req.GetEmail(),
+			Valid:  req.Email != nil,
+		},
+	}
+
+	if req.Password != nil {
+		hashedPassword, err := utils.HashPassword(req.GetPassword())
+		if err != nil {
+			return nil, status.Error(codes.Internal, "failed to hash password")
+		}
+
+		args.HashedPassword = sql.NullString{
+			String: hashedPassword,
+			Valid:  true,
+		}
+
+		args.PasswordChangedAt = sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		}
+	}
+
+	user, err := s.store.UpdateUser(ctx, args)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, status.Error(codes.NotFound, "user not found")
+		}
+
+		return nil, status.Error(codes.Internal, "failed to update user")
+	}
+
+	res := &pb.UpdateUserResponse{
+		User: &pb.User{
+			Username:          user.Username,
+			FullName:          user.FullName,
+			Email:             user.Email,
+			PasswordChangedAt: timestamppb.New(user.PasswordChangedAt),
+			CreatedAt:         timestamppb.New(user.CreatedAt),
+		},
+	}
+
+	return res, nil
+}

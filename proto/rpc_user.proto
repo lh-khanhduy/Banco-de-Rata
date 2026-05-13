@@ -29,6 +29,13 @@ service UserServices {
       body: "*"
     };
   }
+
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
+    option (google.api.http) = {
+      patch: "/v1/update_user"
+      body : "*"
+    };
+  }
 }
 
 message CreateUserRequest {
@@ -63,4 +70,15 @@ message RenewTokenRequest {
 message RenewTokenResponse {
   string                    access_token            = 1;
   google.protobuf.Timestamp access_token_expired_at = 2;
+}
+
+message UpdateUserRequest {
+  string          username  = 1;
+  optional string password  = 2;
+  optional string full_name = 3;
+  optional string email     = 4;
+}
+
+message UpdateUserResponse {
+  User user = 1;
 }
