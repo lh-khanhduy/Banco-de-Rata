@@ -7,6 +7,9 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/lh-khanhduy/banco_de_rata/api"
 	db "github.com/lh-khanhduy/banco_de_rata/db/sqlc"
@@ -30,11 +33,28 @@ func main() {
 		log.Fatal("cannot connect to database: ", err)
 	}
 
+	runDBMigration(config.MigrationURL, config.DBSource)
+
 	store := db.NewStore(conn)
 
-	// uncomment to run HTTP Gateway server at the same time with gRPC server
+	// run both HTTP Gateway and gRPC sever
 	go runGatewayServer(config, store)
 	runGRPCServer(config, store)
+}
+
+// <-- -------------------------------***-------------------------------- -->
+
+func runDBMigration(migrationURL, dbSource string) {
+	migration, err := migrate.New(migrationURL, dbSource)
+	if err != nil {
+		log.Fatal("cannot create new migrate instance: ", err)
+	}
+
+	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatal("failed to migrate up: ", err)
+	}
+
+	log.Println("db migrated successfully")
 }
 
 // runGinServer will run a HTTP server

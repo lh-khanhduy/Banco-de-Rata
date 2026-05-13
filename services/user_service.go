@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"log"
 	"time"
 
 	db "github.com/lh-khanhduy/banco_de_rata/db/sqlc"
@@ -66,6 +67,7 @@ func (s *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.L
 	user, err := s.store.GetUser(ctx, req.GetUsername())
 	if err != nil {
 		if err == sql.ErrNoRows {
+			log.Println("req username: ", req.GetUsername())
 			return nil, status.Error(codes.NotFound, "username not found")
 		}
 		return nil, status.Error(codes.Internal, "failed to find user")

@@ -15,15 +15,15 @@ func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdeta
 		violations = append(violations, fieldViolation("username", err))
 	}
 
-	if err := validator.ValidatePassword(req.GetUsername()); err != nil {
+	if err := validator.ValidatePassword(req.GetPassword()); err != nil {
 		violations = append(violations, fieldViolation("password", err))
 	}
 
-	if err := validator.ValidateFullName(req.GetUsername()); err != nil {
+	if err := validator.ValidateFullName(req.GetFullName()); err != nil {
 		violations = append(violations, fieldViolation("full_name", err))
 	}
 
-	if err := validator.ValidateEmail(req.GetUsername()); err != nil {
+	if err := validator.ValidateEmail(req.GetEmail()); err != nil {
 		violations = append(violations, fieldViolation("email", err))
 	}
 
@@ -35,7 +35,7 @@ func validateLoginUserRequest(req *pb.LoginUserRequest) (violations []*errdetail
 		violations = append(violations, fieldViolation("username", err))
 	}
 
-	if err := validator.ValidatePassword(req.GetUsername()); err != nil {
+	if err := validator.ValidatePassword(req.GetPassword()); err != nil {
 		violations = append(violations, fieldViolation("password", err))
 	}
 
