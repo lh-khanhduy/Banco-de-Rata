@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -33,4 +34,47 @@ func GrpcLogger(ctx context.Context, req any, info *grpc.UnaryServerInfo, handle
 		Msg("received a gRPC request")
 
 	return result, err
+}
+
+type ResponseRecorder struct {
+	http.ResponseWriter
+	StatusCode int
+	Body       []byte
+}
+
+func (r *ResponseRecorder) WriteHeader(statusCode int) {
+	r.StatusCode = statusCode
+	r.ResponseWriter.WriteHeader(statusCode)
+}
+
+func (r *ResponseRecorder) Write(body []byte) (int, error) {
+	r.Body = body
+	return r.ResponseWriter.Write(body)
+}
+
+func HttpLogger(handler http.Handler) http.Handler {
+	handlerFunc := func(res http.ResponseWriter, req *http.Request) {
+		startTime := time.Now()
+		rec := &ResponseRecorder{
+			ResponseWriter: res,
+			StatusCode:     http.StatusOK,
+		}
+		handler.ServeHTTP(rec, req)
+		duration := time.Since(startTime)
+
+		logger := log.Info()
+		if rec.StatusCode != http.StatusOK {
+			logger = log.Error().Bytes("body", rec.Body)
+		}
+
+		logger.Str("protocol", "http").
+			Str("method", req.Method).
+			Str("path", req.RequestURI).
+			Int("status_code", rec.StatusCode).
+			Str("status_text", http.StatusText(rec.StatusCode)).
+			Dur("duration", duration).
+			Msg("received a HTTP request")
+	}
+
+	return http.HandlerFunc(handlerFunc)
 }
