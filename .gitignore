@@ -2,4 +2,6 @@
 *.swagger.json
 .vscode
 
+app.env
+
 /pb
