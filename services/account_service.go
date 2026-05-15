@@ -82,7 +82,7 @@ func (s *Server) GetAccount(ctx context.Context, req *pb.GetAccountRequest) (*pb
 	return res, nil
 }
 
-func (s *Server) ListAccounts(ctx context.Context, req *pb.ListAccountsRequest) (*pb.ListAccountResponse, error) {
+func (s *Server) ListAccounts(ctx context.Context, req *pb.ListAccountsRequest) (*pb.ListAccountsResponse, error) {
 	md := s.extractMetadata(ctx)
 	args := db.ListAccountParams{
 		Owner:  md.Username,
@@ -95,7 +95,7 @@ func (s *Server) ListAccounts(ctx context.Context, req *pb.ListAccountsRequest) 
 		return nil, status.Error(codes.Internal, "cannot get list account")
 	}
 
-	res := &pb.ListAccountResponse{
+	res := &pb.ListAccountsResponse{
 		Accounts: fromDBAccountToPBAccount(listAccounts),
 	}
 

@@ -3,9 +3,11 @@ package services
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	db "github.com/lh-khanhduy/banco_de_rata/db/sqlc"
+	"github.com/lh-khanhduy/banco_de_rata/mail"
 	"github.com/lh-khanhduy/banco_de_rata/pb"
 	"github.com/lh-khanhduy/banco_de_rata/utils"
 	"github.com/lib/pq"
@@ -14,6 +16,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// CREATE USER NEED A TX
 func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	violations := validateCreateUserRequest(req)
 	if violations != nil {
@@ -43,6 +46,32 @@ func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 
 		return nil, status.Error(codes.Internal, "failed to created user")
 	}
+
+	// -------- CREATE, SEND THE EMAIL WITH ID AND CODE
+
+	verifyEmail, err := s.store.CreateVerifyEmail(ctx, db.CreateVerifyEmailParams{
+		Username:   user.Username,
+		Email:      user.Email,
+		SecretCode: utils.RandomString(32),
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to create verify email")
+	}
+
+	mailer, err := mail.NewMailerFromConfig()
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to create mail worker")
+	}
+
+	to := []string{"khanhduywin1907@gmail.com"}
+	content := fmt.Sprintln("ID is:", verifyEmail.ID, " and code is:", verifyEmail.SecretCode)
+
+	err = mailer.SendEmail(to, "VERIFICATION EMAIL", content, "", []string{})
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to send verification email")
+	}
+
+	// --------
 
 	res := &pb.CreateUserResponse{
 		User: &pb.User{

@@ -6,32 +6,31 @@ import "google/protobuf/timestamp.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/lh-khanhduy/banco_de_rata/pb";
-
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   info: {
-    title  : "Banco de Rata API";
-    version: "1.0";
+    title: "Banco de Rata API"
+    version: "1.0"
     contact: {
-      name : "Khanh Duy";
-      url  : "https://github.com/lh-khanhduy";
-      email: "mock@gmail.com";
-    };
-  };
+      name: "Khanh Duy"
+      url: "https://github.com/lh-khanhduy"
+      email: "mock@gmail.com"
+    }
+  }
 };
 
 message User {
-  string                    username            = 1;
-  string                    full_name           = 2;
-  string                    email               = 3;
+  string username = 1;
+  string full_name = 2;
+  string email = 3;
   google.protobuf.Timestamp password_changed_at = 4;
-  google.protobuf.Timestamp created_at          = 5;
+  google.protobuf.Timestamp created_at = 5;
 }
 
 message Account {
-  int64                     id         = 1;
-  string                    owner      = 2;
-  int64                     balance    = 3;
-  string                    currency   = 4;
+  int64 id = 1;
+  string owner = 2;
+  int64 balance = 3;
+  string currency = 4;
   google.protobuf.Timestamp created_at = 5;
 }
 

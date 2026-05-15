@@ -68,6 +68,18 @@ func validateUpdateUserRequest(req *pb.UpdateUserRequest) (violations []*errdeta
 	return violations
 }
 
+func validateVerifyEmailRequest(req *pb.VerifyEmailRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+	if err := validator.ValidateEmailId(req.GetEmailId()); err != nil {
+		violations = append(violations, fieldViolation("email_id", err))
+	}
+
+	if err := validator.ValidateSecretCode(req.GetSecretCode()); err != nil {
+		violations = append(violations, fieldViolation("secret_code", err))
+	}
+
+	return violations
+}
+
 // ACCOUNTS
 func validateCreateAccountRequest(req *pb.CreateAccountRequest) (violations []*errdetails.BadRequest_FieldViolation) {
 	if !utils.IsSupportedCurrency(req.GetCurrency()) {

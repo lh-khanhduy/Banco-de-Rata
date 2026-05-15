@@ -2,38 +2,39 @@ syntax = "proto3";
 
 package pb;
 
-import "google/api/annotations.proto";
 import "common.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/lh-khanhduy/banco_de_rata/pb";
 
-service AccountServices {
-  rpc CreateAccount(CreateAccountRequest) returns (IdResponse){
+service AccountService {
+  // buf:lint:ignore RPC_RESPONSE_STANDARD_NAME
+  rpc CreateAccount(CreateAccountRequest) returns (IdResponse) {
     option (google.api.http) = {
       post: "/v1/create_account"
       body: "*"
     };
   }
-  rpc GetAccount(GetAccountRequest) returns (AccountResponse){
-    option (google.api.http) = {
-      get: "/v1/get_account"
-    };
+
+  // buf:lint:ignore RPC_REQUEST_RESPONSE_UNIQUE
+  // buf:lint:ignore RPC_RESPONSE_STANDARD_NAME
+  rpc GetAccount(GetAccountRequest) returns (AccountResponse) {
+    option (google.api.http) = {get: "/v1/get_account"};
   }
-  rpc ListAccounts(ListAccountsRequest) returns (ListAccountResponse){
-    option (google.api.http) = {
-      get: "/v1/list_accounts"
-    };
+
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse) {
+    option (google.api.http) = {get: "/v1/list_accounts"};
   }
-  rpc UpdateAccount(UpdateAccountRequest) returns (AccountResponse){
+  // buf:lint:ignore RPC_REQUEST_RESPONSE_UNIQUE
+  // buf:lint:ignore RPC_RESPONSE_STANDARD_NAME
+  rpc UpdateAccount(UpdateAccountRequest) returns (AccountResponse) {
     option (google.api.http) = {
       patch: "/v1/update_account"
-      body : "*"
+      body: "*"
     };
   }
-  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse){
-    option (google.api.http) = {
-      delete: "/v1/delete_account"
-    };
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse) {
+    option (google.api.http) = {delete: "/v1/delete_account"};
   }
 }
 
@@ -50,16 +51,16 @@ message AccountResponse {
 }
 
 message ListAccountsRequest {
-  int32 page_id   = 1;
+  int32 page_id = 1;
   int32 page_size = 2;
 }
 
-message ListAccountResponse {
+message ListAccountsResponse {
   repeated Account accounts = 1;
 }
 
 message UpdateAccountRequest {
-  int64 id      = 1;
+  int64 id = 1;
   int64 balance = 2;
 }
 

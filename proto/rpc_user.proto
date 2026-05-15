@@ -2,13 +2,13 @@ syntax = "proto3";
 
 package pb;
 
+import "common.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "common.proto";
 
 option go_package = "github.com/lh-khanhduy/banco_de_rata/pb";
 
-service UserServices {
+service UserService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
     option (google.api.http) = {
       post: "/v1/create_user"
@@ -33,16 +33,23 @@ service UserServices {
   rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
     option (google.api.http) = {
       patch: "/v1/update_user"
-      body : "*"
+      body: "*"
+    };
+  }
+
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse) {
+    option (google.api.http) = {
+      post: "/v1/verify_email"
+      body: "*"
     };
   }
 }
 
 message CreateUserRequest {
-  string username  = 1;
+  string username = 1;
   string full_name = 2;
-  string email     = 3;
-  string password  = 4;
+  string email = 3;
+  string password = 4;
 }
 
 message CreateUserResponse {
@@ -55,12 +62,12 @@ message LoginUserRequest {
 }
 
 message LoginUserResponse {
-  string                    session_id               = 1;
-  string                    access_token             = 2;
-  google.protobuf.Timestamp access_token_expired_at  = 3;
-  string                    refresh_token            = 4;
+  string session_id = 1;
+  string access_token = 2;
+  google.protobuf.Timestamp access_token_expired_at = 3;
+  string refresh_token = 4;
   google.protobuf.Timestamp refresh_token_expired_at = 5;
-  User                      user                     = 6;
+  User user = 6;
 }
 
 message RenewTokenRequest {
@@ -68,17 +75,26 @@ message RenewTokenRequest {
 }
 
 message RenewTokenResponse {
-  string                    access_token            = 1;
+  string access_token = 1;
   google.protobuf.Timestamp access_token_expired_at = 2;
 }
 
 message UpdateUserRequest {
-  string          username  = 1;
-  optional string password  = 2;
+  string username = 1;
+  optional string password = 2;
   optional string full_name = 3;
-  optional string email     = 4;
+  optional string email = 4;
 }
 
 message UpdateUserResponse {
   User user = 1;
+}
+
+message VerifyEmailRequest {
+  int64 email_id = 1;
+  string secret_code = 2;
+}
+
+message VerifyEmailResponse {
+  bool is_verified = 1;
 }

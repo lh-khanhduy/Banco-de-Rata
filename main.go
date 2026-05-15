@@ -85,8 +85,8 @@ func runGRPCServer(config utils.Config, store db.Store) {
 
 	grpcLogger := grpc.UnaryInterceptor(services.GrpcLogger)
 	grpcServer := grpc.NewServer(grpcLogger)
-	pb.RegisterUserServicesServer(grpcServer, server)
-	pb.RegisterAccountServicesServer(grpcServer, server)
+	pb.RegisterUserServiceServer(grpcServer, server)
+	pb.RegisterAccountServiceServer(grpcServer, server)
 	reflection.Register(grpcServer)
 
 	listener, err := net.Listen("tcp", config.GRPCServerAddress)
@@ -122,7 +122,7 @@ func runGatewayServer(config utils.Config, store db.Store) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	err = pb.RegisterUserServicesHandlerServer(ctx, grpcMux, server)
+	err = pb.RegisterUserServiceHandlerServer(ctx, grpcMux, server)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot register handler server")
 	}

@@ -1,15 +1,14 @@
 This folder is specific for gRPC services, for HTTP Gin services will be in /api
 
-# _Evans CLI note:_
+## Evans CLI note
 
 - Run "package pb" then run "show service" could fix the problem of the service table being empty.
 - Run "service UserServices" then run "call CreateUser" could fix the 'CreateUser: unknown service name' error.
 
 - to set header , run: header authorization_payload='{"username":"kevin"}'
 
-# _make proto issues:_
+## make proto issues:
 
-- If got the error:
-  'protoc-gen-go: program not found or is not executable'
+- If got the error: `protoc-gen-go: program not found or is not executable`
 - Run:
-  'export PATH="$PATH:$(go env GOPATH)/bin"'
+  `export PATH="$PATH:$(go env GOPATH)/bin"`
