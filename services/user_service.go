@@ -11,7 +11,6 @@ import (
 	"github.com/lh-khanhduy/banco_de_rata/mail"
 	"github.com/lh-khanhduy/banco_de_rata/pb"
 	"github.com/lh-khanhduy/banco_de_rata/utils"
-	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -38,11 +37,8 @@ func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 
 	user, err := s.store.CreateUser(ctx, args)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "unique_violation":
-				return nil, status.Error(codes.AlreadyExists, "username already exists")
-			}
+		if db.ErrorCode(err) == db.UniqueViolation {
+			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
 
 		return nil, status.Error(codes.Internal, "failed to created user")

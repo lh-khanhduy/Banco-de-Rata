@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	db "github.com/lh-khanhduy/banco_de_rata/db/sqlc"
 	"github.com/lh-khanhduy/banco_de_rata/utils"
-	"github.com/lib/pq"
 )
 
 type createUserRequest struct {
@@ -59,12 +58,9 @@ func (s *Server) createUser(ctx *gin.Context) {
 
 	user, err := s.store.CreateUser(ctx, args)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "unique_violation":
-				ctx.JSON(http.StatusForbidden, errorResponse(err))
-				return
-			}
+		if db.ErrorCode(err) == db.UniqueViolation {
+			ctx.JSON(http.StatusForbidden, errorResponse(err))
+			return
 		}
 
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))

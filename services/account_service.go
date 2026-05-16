@@ -7,7 +7,6 @@ import (
 
 	db "github.com/lh-khanhduy/banco_de_rata/db/sqlc"
 	"github.com/lh-khanhduy/banco_de_rata/pb"
-	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -33,11 +32,11 @@ func (s *Server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest
 
 	account, err := s.store.CreateAccount(ctx, args)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "foreign_key_violation", "unique_violation":
-				return nil, status.Error(codes.AlreadyExists, "violate database constraint")
-			}
+		if db.ErrorCode(err) == db.UniqueViolation {
+			return nil, status.Error(codes.AlreadyExists, "unique constraint violation")
+		}
+		if db.ErrorCode(err) == db.ForeignKeyViolation {
+			return nil, status.Error(codes.AlreadyExists, "foreign key violation")
 		}
 
 		return nil, status.Error(codes.Internal, "cannot create account")
