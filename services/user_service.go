@@ -2,10 +2,11 @@ package services
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/lh-khanhduy/banco_de_rata/db/sqlc"
 	"github.com/lh-khanhduy/banco_de_rata/mail"
 	"github.com/lh-khanhduy/banco_de_rata/pb"
@@ -94,7 +95,7 @@ func (s *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.L
 
 	user, err := s.store.GetUser(ctx, req.GetUsername())
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			return nil, status.Error(codes.NotFound, "username not found")
 		}
 		return nil, status.Error(codes.Internal, "failed to find user")
@@ -158,7 +159,7 @@ func (s *Server) RenewToken(ctx context.Context, req *pb.RenewTokenRequest) (*pb
 
 	session, err := s.store.GetSession(ctx, refreshPayload.ID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			return nil, status.Error(codes.NotFound, "session not found")
 		}
 		return nil, status.Error(codes.Internal, "failed to find session")
@@ -211,11 +212,11 @@ func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb
 
 	args := db.UpdateUserParams{
 		Username: req.GetUsername(),
-		FullName: sql.NullString{
+		FullName: pgtype.Text{
 			String: req.GetFullName(),
 			Valid:  req.FullName != nil,
 		},
-		Email: sql.NullString{
+		Email: pgtype.Text{
 			String: req.GetEmail(),
 			Valid:  req.Email != nil,
 		},
@@ -227,12 +228,12 @@ func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb
 			return nil, status.Error(codes.Internal, "failed to hash password")
 		}
 
-		args.HashedPassword = sql.NullString{
+		args.HashedPassword = pgtype.Text{
 			String: hashedPassword,
 			Valid:  true,
 		}
 
-		args.PasswordChangedAt = sql.NullTime{
+		args.PasswordChangedAt = pgtype.Timestamptz{
 			Time:  time.Now(),
 			Valid: true,
 		}
@@ -240,7 +241,7 @@ func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb
 
 	user, err := s.store.UpdateUser(ctx, args)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			return nil, status.Error(codes.NotFound, "user not found")
 		}
 

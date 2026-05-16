@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"fmt"
 
 	db "github.com/lh-khanhduy/banco_de_rata/db/sqlc"
@@ -53,7 +53,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest
 func (s *Server) GetAccount(ctx context.Context, req *pb.GetAccountRequest) (*pb.AccountResponse, error) {
 	account, err := s.store.GetAccount(ctx, req.GetId())
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			return nil, status.Error(codes.NotFound, "account not found")
 		}
 
