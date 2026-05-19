@@ -103,13 +103,13 @@ func (s *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.L
 	}
 
 	// ACCESS TOKEN
-	accessToken, accessPayload, err := s.tokenMaker.CreateToken(req.GetUsername(), s.config.AccessTokenDuration)
+	accessToken, accessPayload, err := s.tokenMaker.CreateToken(user.Username, user.Role, s.config.AccessTokenDuration)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "cannot created access token")
 	}
 
 	// REFRESH TOKEN
-	refreshToken, refreshPayload, err := s.tokenMaker.CreateToken(req.GetUsername(), s.config.RefreshTokenDuration)
+	refreshToken, refreshPayload, err := s.tokenMaker.CreateToken(user.Username, user.Role, s.config.RefreshTokenDuration)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "cannot created refresh token")
 	}
@@ -178,7 +178,7 @@ func (s *Server) RenewToken(ctx context.Context, req *pb.RenewTokenRequest) (*pb
 	}
 
 	// NEW ACCESS TOKEN
-	accessToken, accessPayload, err := s.tokenMaker.CreateToken(refreshPayload.Username, s.config.AccessTokenDuration)
+	accessToken, accessPayload, err := s.tokenMaker.CreateToken(refreshPayload.Username, refreshPayload.Role, s.config.AccessTokenDuration)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "cannot created new access token")
 	}
@@ -192,7 +192,7 @@ func (s *Server) RenewToken(ctx context.Context, req *pb.RenewTokenRequest) (*pb
 }
 
 func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
-	authPayload, err := s.authorizeUser(ctx)
+	authPayload, err := s.authorizeUser(ctx, []string{utils.RoleBankWorker, utils.RoleDepositor})
 	if err != nil {
 		return nil, unauthenticatedError(err)
 	}
@@ -202,7 +202,7 @@ func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb
 		return nil, invalidArgsError(violations)
 	}
 
-	if authPayload.Username != req.GetUsername() {
+	if authPayload.Role != utils.RoleBankWorker && authPayload.Username != req.GetUsername() {
 		return nil, status.Error(codes.PermissionDenied, "cannot update other user's info")
 	}
 

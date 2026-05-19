@@ -16,6 +16,7 @@ var (
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
 	Username  string    `json:"username"`
+	Role      string    `json:"role"`
 	IssuedAt  time.Time `json:"issued_at"`  // for Paseto
 	ExpiredAt time.Time `json:"expired_at"` // for Paseto
 
@@ -23,7 +24,7 @@ type Payload struct {
 }
 
 // NewPayload create anew token payload
-func NewPayload(username string, duration time.Duration) (*Payload, error) {
+func NewPayload(username string, role string, duration time.Duration) (*Payload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
@@ -32,6 +33,7 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 	return &Payload{
 		ID:        tokenID,
 		Username:  username,
+		Role:      role,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 		RegisteredClaims: jwt.RegisteredClaims{
